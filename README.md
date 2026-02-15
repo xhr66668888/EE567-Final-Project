@@ -120,4 +120,5 @@ Main result files are in `output/`.
 ### Notes
 - Script creates `.venv` automatically.
 - Script installs dependencies from `requirements.txt`.
+- SWVF data files are stored via **Git LFS**. The script auto-detects LFS pointers and installs `git-lfs` locally if needed.
 - If MiniMax API call fails, pipeline still runs with fallback synthetic generation.
