@@ -63,21 +63,16 @@ Main outputs under `output/`:
 - `llm_explanations.csv` natural-language explanations for top anomalies
 
 ## 7) LLM Integration (MiniMax)
-We do NOT hard-code API key in code. Use environment variables:
+The MiniMax API key is hardcoded in `src/llm_integration.py` for convenience.
+No extra environment setup needed.
 
-```bash
-export MINIMAX_API_KEY="YOUR_KEY"
-export MINIMAX_BASE_URL="https://api.minimax.chat/v1"
-export MINIMAX_MODEL="MiniMax-Text-01"
-```
-
-Then run:
+Run LLM stage:
 
 ```bash
 python src/llm_integration.py --input output/swvf_processed.parquet
 ```
 
-If API fails, code automatically falls back to rule-based synthetic generation and template explanation.
+If API call fails for any reason, code automatically falls back to rule-based synthetic generation and template explanation.
 
 ## 8) How This Matches Grading Requirements
 - **Project title / members / dataset / problem / methods / milestone / references**: in `reports/proposal_final.md`
