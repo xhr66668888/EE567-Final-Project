@@ -17,20 +17,25 @@ def _detect_compression(filepath):
 
 
 def _detect_sep(filepath, compression):
-    """Read first line(s) to guess the delimiter."""
+    """Read first line(s) to guess the delimiter.
+    Uses binary mode for gzip to avoid encoding issues during detection."""
     try:
         if compression == "gzip":
-            with gzip.open(filepath, "rt", errors="replace") as fh:
-                first = fh.readline()
+            with gzip.open(filepath, "rb") as fh:
+                first = fh.readline().decode("latin-1", errors="replace")
         else:
-            with open(filepath, "r", errors="replace") as fh:
-                first = fh.readline()
-        if "|" in first:
+            with open(filepath, "rb") as fh:
+                first = fh.readline().decode("latin-1", errors="replace")
+        # count occurrences – Ohio SWVF has many pipes per header line
+        n_pipe = first.count("|")
+        n_tab = first.count("\t")
+        n_comma = first.count(",")
+        if n_pipe >= max(n_tab, n_comma, 1):
             return "|"
-        if "\t" in first:
+        if n_tab >= max(n_comma, 1):
             return "\t"
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[load] sep detect warning: {e}")
     return ","
 
 
@@ -43,7 +48,12 @@ def read_all_files(file_list):
         comp = _detect_compression(f)
         sep = _detect_sep(f, comp)
         print(f"[load]   compression={comp}  sep={repr(sep)}")
-        df = pd.read_csv(f, dtype=str, low_memory=False, compression=comp, sep=sep)
+        df = pd.read_csv(
+            f, dtype=str, low_memory=False,
+            compression=comp, sep=sep,
+            encoding="latin-1",          # Ohio SWVF has some Windows-1252 chars
+            on_bad_lines="warn",         # skip malformed rows instead of crash
+        )
         all_df.append(df)
         i += 1
 
