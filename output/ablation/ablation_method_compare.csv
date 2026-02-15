@@ -1,0 +1,4 @@
+method,anomalies,pct
+Rules-only,644655,8.1607
+IF-only,39460,0.4995
+Rules+IF,644655,8.1607
