@@ -50,8 +50,11 @@ def _post_chat(messages, temperature=0.2):
 
 def _rule_based_fake(df, n):
     out = []
-    pool_addr = df["ADDR_KEY"].dropna().astype(str).tolist()
-    pool_city = df["RESIDENTIAL_CITY"].dropna().astype(str).tolist()
+    # sample a small pool instead of converting millions of rows to list
+    sample_size = min(5000, len(df))
+    sampled = df.sample(n=sample_size, random_state=42)
+    pool_addr = sampled["ADDR_KEY"].dropna().astype(str).tolist()
+    pool_city = sampled["RESIDENTIAL_CITY"].dropna().astype(str).tolist()
 
     i = 0
     while i < n:
@@ -248,8 +251,13 @@ def main():
             fake_df[c] = ""
         i += 1
 
-    fake_df = fake_df[real_df.columns]
-    mix = pd.concat([real_df, fake_df], axis=0, ignore_index=True)
+    # use a stratified sample of real data to keep memory/time manageable
+    sample_n = min(50000, len(real_df))
+    real_sample = real_df.sample(n=sample_n, random_state=567)
+    print(f"[mix] using {sample_n} real + {len(fake_df)} synth for evaluation")
+
+    fake_df = fake_df[real_sample.columns]
+    mix = pd.concat([real_sample, fake_df], axis=0, ignore_index=True)
 
     mix = add_features(mix)
     mix = run_if(mix)
