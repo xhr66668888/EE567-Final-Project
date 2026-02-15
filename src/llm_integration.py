@@ -98,7 +98,12 @@ def generate_synthetic_with_llm(df, n=200):
     tmp = df[sample_cols].head(8).fillna("")
     i = 0
     while i < len(tmp):
-        base_rows.append(tmp.iloc[i].to_dict())
+        row = tmp.iloc[i].to_dict()
+        # convert non-serializable types (Timestamp etc.) to strings
+        for k, v in row.items():
+            if not isinstance(v, (str, int, float, bool, type(None))):
+                row[k] = str(v)
+        base_rows.append(row)
         i += 1
 
     sys_msg = {
