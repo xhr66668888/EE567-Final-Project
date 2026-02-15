@@ -30,8 +30,10 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-if [[ ! -f "SWVF_1_22.txt.gz" ]]; then
+# accept either .txt.gz or .txt data files
+if [[ ! -f "SWVF_1_22.txt.gz" ]] && [[ ! -f "SWVF_1_22.txt" ]]; then
   echo "[err] missing SWVF files in repo root"
+  echo "[err] place SWVF_1_22.txt(.gz) ... SWVF_67_88.txt(.gz) here"
   exit 1
 fi
 

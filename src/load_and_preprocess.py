@@ -1,6 +1,37 @@
 import argparse
+import gzip
 import os
 import pandas as pd
+
+
+def _detect_compression(filepath):
+    """Check magic bytes to decide if a file is really gzip."""
+    try:
+        with open(filepath, "rb") as fh:
+            magic = fh.read(2)
+        if magic == b"\x1f\x8b":
+            return "gzip"
+    except Exception:
+        pass
+    return None
+
+
+def _detect_sep(filepath, compression):
+    """Read first line(s) to guess the delimiter."""
+    try:
+        if compression == "gzip":
+            with gzip.open(filepath, "rt", errors="replace") as fh:
+                first = fh.readline()
+        else:
+            with open(filepath, "r", errors="replace") as fh:
+                first = fh.readline()
+        if "|" in first:
+            return "|"
+        if "\t" in first:
+            return "\t"
+    except Exception:
+        pass
+    return ","
 
 
 def read_all_files(file_list):
@@ -9,7 +40,10 @@ def read_all_files(file_list):
     while i < len(file_list):
         f = file_list[i]
         print(f"[load] reading {f}")
-        df = pd.read_csv(f, dtype=str, low_memory=False, compression="gzip")
+        comp = _detect_compression(f)
+        sep = _detect_sep(f, comp)
+        print(f"[load]   compression={comp}  sep={repr(sep)}")
+        df = pd.read_csv(f, dtype=str, low_memory=False, compression=comp, sep=sep)
         all_df.append(df)
         i += 1
 

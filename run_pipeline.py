@@ -18,12 +18,30 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
 
-    files = [
+    # support both .txt.gz and .txt file names
+    gz_files = [
         "SWVF_1_22.txt.gz",
         "SWVF_23_44.txt.gz",
         "SWVF_45_66.txt.gz",
         "SWVF_67_88.txt.gz"
     ]
+    txt_files = [
+        "SWVF_1_22.txt",
+        "SWVF_23_44.txt",
+        "SWVF_45_66.txt",
+        "SWVF_67_88.txt"
+    ]
+    files = []
+    for gz, txt in zip(gz_files, txt_files):
+        if os.path.isfile(gz):
+            files.append(gz)
+        elif os.path.isfile(txt):
+            files.append(txt)
+        else:
+            print(f"[warn] neither {gz} nor {txt} found, skipping")
+    if not files:
+        raise RuntimeError("No SWVF data files found in repo root. "
+                           "Place SWVF_*.txt or SWVF_*.txt.gz here.")
 
     p1 = [
         "python", "src/load_and_preprocess.py",
